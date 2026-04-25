@@ -82,6 +82,22 @@ describe('CLI', () => {
       expect(output).toContain('COMMANDS:');
     });
 
+    it('should show Anvill as primary CLI branding in help', async () => {
+      await cli.run(['--help']);
+
+      const output = consoleOutput.join('');
+      expect(output).toContain('anvill');
+      expect(output).toContain('Grounded AI engineering control plane');
+    });
+
+    it('should allow compatibility alias names when explicitly provided', async () => {
+      const compatCli = new CLI({ name: 'claude-flow', interactive: false });
+      await compatCli.run(['--help']);
+
+      const output = consoleOutput.join('');
+      expect(output).toContain('claude-flow');
+    });
+
     it('should show help with -h flag', async () => {
       await cli.run(['-h']);
 

@@ -1,6 +1,6 @@
 /**
  * V3 CLI Main Entry Point
- * Modernized CLI for RuFlo V3
+ * Modernized CLI for Anvill (compatibility with RuFlo/claude-flow retained)
  *
  * Created with ❤️ by ruv.io
  */
@@ -50,8 +50,8 @@ export class CLI {
   private interactive: boolean;
 
   constructor(options: CLIOptions = {}) {
-    this.name = options.name || 'ruflo';
-    this.description = options.description || 'RuFlo V3 - AI Agent Orchestration Platform';
+    this.name = options.name || 'anvill';
+    this.description = options.description || 'Anvill - Grounded AI engineering control plane';
     this.version = options.version || VERSION;
     this.parser = commandParser;
     this.output = output;
