@@ -424,7 +424,7 @@ const initAction = async (ctx: CommandContext): Promise<CommandResult> => {
         `Run ${output.highlight('claude-flow daemon start')} to start background workers`,
         `Run ${output.highlight('claude-flow memory init')} to initialize memory database`,
         `Run ${output.highlight('claude-flow swarm init')} to initialize a swarm`,
-        `Or use ${output.highlight('claude-flow init --start-all')} to do all of the above`,
+        `Or use ${output.highlight('anvill init --start-all')} to do all of the above`,
         options.components.settings ? `Review ${output.highlight('.claude/settings.json')} for hook configurations` : '',
       ].filter(Boolean));
     }
@@ -710,7 +710,7 @@ const wizardCommand: Command = {
 // Check subcommand
 const checkCommand: Command = {
   name: 'check',
-  description: 'Check if RuFlo is initialized',
+  description: 'Check if Anvill is initialized',
   action: async (ctx: CommandContext): Promise<CommandResult> => {
     const initialized = isInitialized(ctx.cwd);
 
@@ -1028,7 +1028,7 @@ const upgradeCommand: Command = {
 // Main init command
 export const initCommand: Command = {
   name: 'init',
-  description: 'Initialize RuFlo in the current directory',
+  description: 'Initialize Anvill in the current directory (compatibility with RuFlo/claude-flow retained)',
   subcommands: [wizardCommand, checkCommand, skillsCommand, hooksCommand, upgradeCommand],
   options: [
     {
@@ -1102,25 +1102,25 @@ export const initCommand: Command = {
     },
   ],
   examples: [
-    { command: 'claude-flow init', description: 'Initialize with default configuration' },
-    { command: 'claude-flow init --start-all', description: 'Initialize and start daemon, memory, swarm' },
-    { command: 'claude-flow init --start-daemon', description: 'Initialize and start daemon only' },
-    { command: 'claude-flow init --minimal', description: 'Initialize with minimal configuration' },
-    { command: 'claude-flow init --full', description: 'Initialize with all components' },
-    { command: 'claude-flow init --force', description: 'Reinitialize and overwrite existing config' },
-    { command: 'claude-flow init --only-claude', description: 'Only create Claude Code integration' },
-    { command: 'claude-flow init --skip-claude', description: 'Only create V3 runtime' },
-    { command: 'claude-flow init wizard', description: 'Interactive setup wizard' },
-    { command: 'claude-flow init --with-embeddings', description: 'Initialize with ONNX embeddings' },
-    { command: 'claude-flow init --with-embeddings --embedding-model Xenova/all-mpnet-base-v2', description: 'Use larger embedding model' },
-    { command: 'claude-flow init skills --all', description: 'Install all available skills' },
-    { command: 'claude-flow init hooks --minimal', description: 'Create minimal hooks configuration' },
-    { command: 'claude-flow init upgrade', description: 'Update helpers while preserving data' },
-    { command: 'claude-flow init upgrade --settings', description: 'Update helpers and merge new settings (Agent Teams)' },
-    { command: 'claude-flow init upgrade --verbose', description: 'Show detailed upgrade info' },
-    { command: 'claude-flow init --codex', description: 'Initialize for OpenAI Codex (AGENTS.md)' },
-    { command: 'claude-flow init --codex --full', description: 'Codex init with all 137+ skills' },
-    { command: 'claude-flow init --dual', description: 'Initialize for both Claude Code and Codex' },
+    { command: 'anvill init', description: 'Initialize with default configuration' },
+    { command: 'anvill init --start-all', description: 'Initialize and start daemon, memory, swarm' },
+    { command: 'anvill init --start-daemon', description: 'Initialize and start daemon only' },
+    { command: 'anvill init --minimal', description: 'Initialize with minimal configuration' },
+    { command: 'anvill init --full', description: 'Initialize with all components' },
+    { command: 'anvill init --force', description: 'Reinitialize and overwrite existing config' },
+    { command: 'anvill init --only-claude', description: 'Only create Claude Code integration' },
+    { command: 'anvill init --skip-claude', description: 'Only create V3 runtime' },
+    { command: 'anvill init wizard', description: 'Interactive setup wizard' },
+    { command: 'anvill init --with-embeddings', description: 'Initialize with ONNX embeddings' },
+    { command: 'anvill init --with-embeddings --embedding-model Xenova/all-mpnet-base-v2', description: 'Use larger embedding model' },
+    { command: 'anvill init skills --all', description: 'Install all available skills' },
+    { command: 'anvill init hooks --minimal', description: 'Create minimal hooks configuration' },
+    { command: 'anvill init upgrade', description: 'Update helpers while preserving data' },
+    { command: 'anvill init upgrade --settings', description: 'Update helpers and merge new settings (Agent Teams)' },
+    { command: 'anvill init upgrade --verbose', description: 'Show detailed upgrade info' },
+    { command: 'anvill init --codex', description: 'Initialize for OpenAI Codex (AGENTS.md)' },
+    { command: 'anvill init --codex --full', description: 'Codex init with all 137+ skills' },
+    { command: 'anvill init --dual', description: 'Initialize for both Claude Code and Codex' },
   ],
   action: initAction,
 };

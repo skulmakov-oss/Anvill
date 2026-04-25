@@ -1,6 +1,6 @@
 /**
  * V3 CLI Main Entry Point
- * Modernized CLI for RuFlo V3
+ * Modernized CLI for Anvill (compatibility with RuFlo/claude-flow retained)
  *
  * Created with ❤️ by ruv.io
  */
@@ -11,7 +11,7 @@ import { dirname, join } from 'path';
 import type { Command, CommandContext, CommandResult, V3Config, CLIError } from './types.js';
 import { CommandParser, commandParser } from './parser.js';
 import { OutputFormatter, output } from './output.js';
-import { commands, commandsByCategory, getCommandsByCategory, commandRegistry, getCommand, getCommandAsync, getCommandNames, getLazyCommandNames, hasCommand } from './commands/index.js';
+import { commands, commandsByCategory, getCommandMetadataByCategory, commandRegistry, getCommand, getCommandAsync, getCommandNames, getLazyCommandNames, hasCommand } from './commands/index.js';
 import { suggestCommand } from './suggest.js';
 import { runStartupUpdateCheck } from './update/index.js';
 
@@ -50,8 +50,8 @@ export class CLI {
   private interactive: boolean;
 
   constructor(options: CLIOptions = {}) {
-    this.name = options.name || 'ruflo';
-    this.description = options.description || 'RuFlo V3 - AI Agent Orchestration Platform';
+    this.name = options.name || 'anvill';
+    this.description = options.description || 'Anvill - Grounded AI engineering control plane';
     this.version = options.version || VERSION;
     this.parser = commandParser;
     this.output = output;
@@ -275,8 +275,9 @@ export class CLI {
     this.output.writeln(`  ${this.name} <command> [subcommand] [options]`);
     this.output.writeln();
 
-    // PERF-03: Load all commands by category (lazy-loaded on demand)
-    const categories = await getCommandsByCategory();
+    // Startup-safe help path: use lightweight metadata to avoid importing
+    // optional-heavy command implementations on `--help`.
+    const categories = getCommandMetadataByCategory();
 
     // Primary Commands
     this.output.writeln(this.output.bold('PRIMARY COMMANDS:'));

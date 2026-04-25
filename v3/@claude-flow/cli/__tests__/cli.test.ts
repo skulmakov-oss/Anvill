@@ -6,6 +6,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { CLI, VERSION } from '../src/index.js';
 import type { Command } from '../src/types.js';
+import * as commandIndex from '../src/commands/index.js';
 
 describe('CLI', () => {
   let cli: CLI;
@@ -75,11 +76,29 @@ describe('CLI', () => {
     });
 
     it('should show help with --help flag', async () => {
+      const heavyLoaderSpy = vi.spyOn(commandIndex, 'getCommandsByCategory');
       await cli.run(['--help']);
 
       const output = consoleOutput.join('');
       expect(output).toContain('USAGE:');
       expect(output).toContain('COMMANDS:');
+      expect(heavyLoaderSpy).not.toHaveBeenCalled();
+    });
+
+    it('should show Anvill as primary CLI branding in help', async () => {
+      await cli.run(['--help']);
+
+      const output = consoleOutput.join('');
+      expect(output).toContain('anvill');
+      expect(output).toContain('Grounded AI engineering control plane');
+    });
+
+    it('should allow compatibility alias names when explicitly provided', async () => {
+      const compatCli = new CLI({ name: 'claude-flow', interactive: false });
+      await compatCli.run(['--help']);
+
+      const output = consoleOutput.join('');
+      expect(output).toContain('claude-flow');
     });
 
     it('should show help with -h flag', async () => {
@@ -96,6 +115,14 @@ describe('CLI', () => {
       const output = consoleOutput.join('');
       expect(output).toContain('agent');
       expect(output).toContain('Agent management');
+    });
+
+    it('should show init command help', async () => {
+      await cli.run(['init', '--help']);
+
+      const output = consoleOutput.join('');
+      expect(output).toContain('anvill init');
+      expect(output).toContain('Initialize');
     });
 
     it('should list all available commands', async () => {

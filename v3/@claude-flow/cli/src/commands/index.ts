@@ -11,6 +11,18 @@
 
 import type { Command } from '../types.js';
 
+export type CommandCategory = 'primary' | 'advanced' | 'utility' | 'analysis' | 'management';
+
+export interface CommandMetadata {
+  name: string;
+  aliases?: string[];
+  category: CommandCategory;
+  description: string;
+  hidden?: boolean;
+  heavy?: boolean;
+  experimental?: boolean;
+}
+
 // =============================================================================
 // Lazy Loading Infrastructure
 // =============================================================================
@@ -75,6 +87,49 @@ const commandLoaders: Record<string, CommandLoader> = {
   cleanup: () => import('./cleanup.js'),
   autopilot: () => import('./autopilot.js'),
 };
+
+/**
+ * Lightweight command metadata used for top-level help output.
+ * Important: this registry must stay import-safe and must not import command modules.
+ */
+const commandMetadata: CommandMetadata[] = [
+  { name: 'init', aliases: ['i'], category: 'primary', description: 'Initialize project with AI agent system' },
+  { name: 'start', category: 'primary', description: 'Start the interactive AI agent system' },
+  { name: 'status', aliases: ['st'], category: 'primary', description: 'Show system status and active agents' },
+  { name: 'agent', aliases: ['a'], category: 'primary', description: 'Agent management and lifecycle control' },
+  { name: 'swarm', aliases: ['s'], category: 'primary', description: 'Swarm orchestration and coordination' },
+  { name: 'memory', aliases: ['mem'], category: 'primary', description: 'Persistent memory and context management' },
+  { name: 'task', aliases: ['t'], category: 'primary', description: 'Task creation, assignment, and tracking' },
+  { name: 'session', aliases: ['sess'], category: 'primary', description: 'Session management and analytics' },
+  { name: 'mcp', category: 'primary', description: 'Model Context Protocol server and tools' },
+  { name: 'hooks', aliases: ['h'], category: 'primary', description: 'Hook management and event handling' },
+  { name: 'neural', aliases: ['n'], category: 'advanced', description: 'Neural network training and optimization', heavy: true },
+  { name: 'security', aliases: ['sec'], category: 'advanced', description: 'Security scanning and vulnerability analysis' },
+  { name: 'performance', aliases: ['perf'], category: 'advanced', description: 'Performance monitoring and optimization' },
+  { name: 'embeddings', aliases: ['emb'], category: 'advanced', description: 'Vector embeddings and semantic search', heavy: true },
+  { name: 'hive-mind', aliases: ['hm'], category: 'advanced', description: 'Byzantine fault-tolerant consensus system' },
+  { name: 'ruvector', aliases: ['rv'], category: 'advanced', description: 'RuVector PostgreSQL bridge and commands', heavy: true },
+  { name: 'guidance', aliases: ['guide'], category: 'advanced', description: 'Guidance policy and control plane' },
+  { name: 'autopilot', aliases: ['ap'], category: 'advanced', description: 'Autonomous workflow orchestration', experimental: true },
+  { name: 'config', aliases: ['cfg'], category: 'utility', description: 'Configuration management and validation' },
+  { name: 'doctor', aliases: ['diag'], category: 'utility', description: 'Diagnostics and troubleshooting checks' },
+  { name: 'daemon', aliases: ['d'], category: 'utility', description: 'Background daemon process management' },
+  { name: 'completions', aliases: ['comp'], category: 'utility', description: 'Generate shell completion scripts' },
+  { name: 'migrate', aliases: ['mig'], category: 'utility', description: 'Migration tools and utilities' },
+  { name: 'workflow', aliases: ['wf'], category: 'utility', description: 'Workflow definition and execution' },
+  { name: 'analyze', aliases: ['an'], category: 'analysis', description: 'Code analysis and quality assessment' },
+  { name: 'route', aliases: ['r'], category: 'analysis', description: 'Q-learning based task routing' },
+  { name: 'progress', aliases: ['pg'], category: 'analysis', description: 'Progress tracking and analytics' },
+  { name: 'providers', aliases: ['prov'], category: 'management', description: 'AI provider configuration and management' },
+  { name: 'plugins', aliases: ['p'], category: 'management', description: 'Plugin installation and management' },
+  { name: 'deployment', aliases: ['dep'], category: 'management', description: 'Deployment and release management' },
+  { name: 'claims', aliases: ['cl'], category: 'management', description: 'Issue claims and ownership management' },
+  { name: 'issues', aliases: ['iss'], category: 'management', description: 'Issue tracking and management' },
+  { name: 'update', aliases: ['up'], category: 'management', description: 'Update checks and package upgrades' },
+  { name: 'process', aliases: ['proc'], category: 'management', description: 'Process and worker orchestration' },
+  { name: 'appliance', aliases: ['app'], category: 'management', description: 'RVFA appliance lifecycle management', heavy: true },
+  { name: 'cleanup', aliases: ['clean'], category: 'management', description: 'Workspace and artifact cleanup utilities' },
+];
 
 // Cache for loaded commands
 const loadedCommands = new Map<string, Command>();
@@ -268,6 +323,20 @@ export async function getCommandsByCategory(): Promise<Record<string, Command[]>
       providersCmd, pluginsCmd, deploymentCmd, claimsCmd,
       issuesCmd, updateCmd, processCmd, applianceCmd, cleanupCmd,
     ].filter(Boolean) as Command[],
+  };
+}
+
+/**
+ * Lightweight command metadata grouped by category.
+ * Use this for startup help paths that must avoid importing optional dependencies.
+ */
+export function getCommandMetadataByCategory(): Record<CommandCategory, CommandMetadata[]> {
+  return {
+    primary: commandMetadata.filter(cmd => cmd.category === 'primary'),
+    advanced: commandMetadata.filter(cmd => cmd.category === 'advanced'),
+    utility: commandMetadata.filter(cmd => cmd.category === 'utility'),
+    analysis: commandMetadata.filter(cmd => cmd.category === 'analysis'),
+    management: commandMetadata.filter(cmd => cmd.category === 'management'),
   };
 }
 

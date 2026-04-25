@@ -1,4 +1,4 @@
-# 🌊 RuFlo v3.5: Enterprise AI Orchestration Platform
+# Anvill
 
 <div align="center">
 
@@ -20,18 +20,32 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/reuvencohen/)
 [![YouTube](https://img.shields.io/badge/YouTube-Subscribe-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@ReuvenCohen)
 
-# **Multi-agent AI orchestration for Claude Code**
-*Deploy 16 specialized agent roles + custom types in coordinated swarms with self-learning capabilities, fault-tolerant consensus, and enterprise-grade security.*
+# **Grounded AI engineering control plane for tasks, policy gates, hooks, memory, and audit trails.**
 
 </div>
 
-> **Why Ruflo?** Claude Flow is now Ruflo — named by Ruv, who loves Rust, flow states, and building things that feel inevitable. The "Ru" is the Ruv. The "flo" is the flow. Underneath, WASM kernels written in Rust power the policy engine, embeddings, and proof system. 6,000+ commits later, this is v3.5.
+> **Fork note:** Anvill is a controlled rebrand fork of RuFlo / claude-flow. Upstream attribution is preserved while this fork shifts to grounded AI engineering workflow control.
+
+## What Anvill is
+
+- A local AI engineering control plane for software work.
+- A workflow layer for task/session discipline.
+- A policy-gated command and hook surface.
+- A project memory and audit trail foundation for agent activity.
+- A compatibility-first fork that keeps upstream behavior where needed.
+
+## What Anvill is not
+
+- Not an AGI system.
+- Not a replacement for your target runtime/project stack.
+- Not a swarm-first marketing platform.
+- Not a magic autonomous coding system that removes engineering accountability.
 
 ## Getting into the Flow
 
-Ruflo is a comprehensive AI agent orchestration framework that transforms Claude Code into a powerful multi-agent development platform. It enables teams to deploy, coordinate, and optimize specialized AI agents working together on complex software engineering tasks.
+Anvill (forked from RuFlo / claude-flow) is focused on grounded control of AI-assisted engineering workflows: task execution, policy checks, hooks, memory, and auditability.
 
-### Self-Learning/Self-Optimizing Agent Architecture
+### Workflow Control Architecture
 
 ```
 User → Ruflo (CLI/MCP) → Router → Swarm → Agents → Memory → LLM Providers
@@ -66,7 +80,7 @@ flowchart TB
         CLM[Claims<br/>Human-Agent Coord]
     end
 
-    subgraph AGENTS["🤖 100+ Agents"]
+    subgraph AGENTS["🤖 Agent Roles"]
         AG1[coder]
         AG2[tester]
         AG3[reviewer]
@@ -148,6 +162,12 @@ npx ruflo@latest hooks intelligence --status
 
 </details>
 
+### Migration placeholders (phase 1)
+
+- Target config directory (planned): `.anvill/`
+- Target policy file (planned): `ANVILL.md`
+- Compatibility in this phase: existing `.claude-flow/` and `CLAUDE.md` behavior remains supported.
+
 ### Get Started Fast
 
 ```bash
@@ -158,25 +178,25 @@ curl -fsSL https://cdn.jsdelivr.net/gh/ruvnet/ruflo@main/scripts/install.sh | ba
 curl -fsSL https://cdn.jsdelivr.net/gh/ruvnet/ruflo@main/scripts/install.sh | bash -s -- --full
 
 # Or via npx
-npx ruflo@latest init --wizard
+npx anvill@latest init --wizard  # compatibility aliases may still use ruflo/claude-flow in this phase
 ```
 
-> **New to Ruflo?** You don't need to learn 310+ MCP tools or 26 CLI commands. After running `init`, just use Claude Code normally — the hooks system automatically routes tasks to the right agents, learns from successful patterns, and coordinates multi-agent work in the background. The advanced tools exist for fine-grained control when you need it.
+> **New to Anvill?** You don't need to learn 310+ MCP tools or 26 CLI commands. After running `init`, just use Claude Code normally — the hooks system automatically routes tasks to the right agents, learns from successful patterns, and coordinates multi-agent work in the background. The advanced tools exist for fine-grained control when you need it.
 
 ---
 ### Key Capabilities
 
-🤖 **100+ Specialized Agents** - Ready-to-use AI agents for coding, code review, testing, security audits, documentation, and DevOps. Each agent is optimized for its specific role.
+🤖 **Specialized agent workflows** - Structured agent roles for coding, review, testing, security, documentation, and operations use cases.
 
 🐝 **Coordinated Agent Teams** - Run unlimited agents simultaneously in organized swarms. Agents spawn sub-workers, communicate, share context, and divide work automatically using hierarchical (queen/workers) or mesh (peer-to-peer) patterns.
 
-🧠 **Learns From Your Workflow** - The system remembers what works. Successful patterns are stored and reused, routing similar tasks to the best-performing agents. Gets smarter over time.
+🧠 **Project memory support** - The system can persist and reuse successful workflow patterns where configured.
 
 🔌 **Works With Any LLM** - Switch between Claude, GPT, Gemini, Cohere, or local models like Llama. Automatic failover if one provider is unavailable. Smart routing picks the cheapest option that meets quality requirements.
 
-⚡ **Plugs Into Claude Code** - Native integration via MCP (Model Context Protocol). Use ruflo commands directly in your Claude Code sessions with full tool access.
+⚡ **Plugs Into Claude Code** - Native integration via MCP (Model Context Protocol). Use `anvill` as the preferred command name (legacy aliases remain available in this phase).
 
-🔒 **Production-Ready Security** - Built-in protection against prompt injection, input validation, path traversal prevention, command injection blocking, and safe credential handling.
+🔒 **Policy and safety controls** - Includes safeguards for risky inputs and command flows to support disciplined engineering operations.
 
 🧩 **Extensible Plugin System** - Add custom capabilities with the plugin SDK. Create workers, hooks, providers, and security modules. Share plugins via the decentralized IPFS marketplace.
 
@@ -193,7 +213,7 @@ Every request flows through four layers: from your CLI or Claude Code interface,
 |-------|------------|--------------|
 | User | Claude Code, CLI | Your interface to control and run commands |
 | Orchestration | MCP Server, Router, Hooks | Routes requests to the right agents |
-| Agents | 100+ types | Specialized workers (coder, tester, reviewer...) |
+| Agents | Role-based types | Specialized workers (coder, tester, reviewer...) |
 | Providers | Anthropic, OpenAI, Google, Ollama | AI models that power reasoning |
 
 </details>
@@ -2711,7 +2731,7 @@ Complete command-line interface for all Ruflo operations.
 
 ```bash
 # Initialize project with wizard
-npx ruflo@latest init --wizard
+npx anvill@latest init --wizard  # compatibility aliases may still use ruflo/claude-flow in this phase
 
 # Start daemon with background workers
 npx ruflo@latest daemon start
@@ -7265,7 +7285,7 @@ npx ruflo@latest config import --file my-config.json
 npx ruflo@latest config reset --key swarm
 
 # Initialize with wizard
-npx ruflo@latest init --wizard
+npx anvill@latest init --wizard  # compatibility aliases may still use ruflo/claude-flow in this phase
 ```
 
 </details>
