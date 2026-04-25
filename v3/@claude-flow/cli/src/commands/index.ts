@@ -2,11 +2,9 @@
  * V3 CLI Commands Index
  * Central registry for all CLI commands
  *
- * NOTE: All commands are synchronously imported at module load time (lines below).
- * The commandLoaders/loadCommand infrastructure provides an async fallback for
- * commands looked up via getCommandAsync() but does NOT reduce startup time since
- * all modules are already imported synchronously for the commands array and
- * commandsByCategory exports.
+ * NOTE: Commands are loaded lazily through commandLoaders/loadCommand.
+ * This keeps startup/help paths import-safe in source checkouts where optional
+ * native dependencies may be unavailable.
  */
 
 import type { Command } from '../types.js';
@@ -133,85 +131,51 @@ const commandMetadata: CommandMetadata[] = [
 
 // Cache for loaded commands
 const loadedCommands = new Map<string, Command>();
+const lazyAliasToCommand = new Map<string, string>();
+for (const meta of commandMetadata) {
+  for (const alias of meta.aliases ?? []) {
+    lazyAliasToCommand.set(alias, meta.name);
+  }
+}
 
 /**
  * Load a command lazily
  */
 async function loadCommand(name: string): Promise<Command | undefined> {
-  if (loadedCommands.has(name)) {
-    return loadedCommands.get(name);
+  const canonicalName = commandLoaders[name] ? name : lazyAliasToCommand.get(name) ?? name;
+
+  if (loadedCommands.has(canonicalName)) {
+    return loadedCommands.get(canonicalName);
   }
 
-  const loader = commandLoaders[name];
+  const loader = commandLoaders[canonicalName];
   if (!loader) return undefined;
 
   try {
     const module = await loader();
     // Try to find the command export (either default or named)
-    const command = (module.default || module[`${name}Command`] || Object.values(module).find(
+    const command = (module.default || module[`${canonicalName}Command`] || Object.values(module).find(
       (v): v is Command => typeof v === 'object' && v !== null && 'name' in v && 'description' in v
     )) as Command | undefined;
 
     if (command) {
-      loadedCommands.set(name, command);
+      loadedCommands.set(canonicalName, command);
       return command;
     }
   } catch (error) {
     // Silently fail for missing optional commands
     if (process.env.DEBUG) {
-      console.error(`Failed to load command ${name}:`, error);
+      console.error(`Failed to load command ${canonicalName}:`, error);
     }
   }
   return undefined;
 }
 
 // =============================================================================
-// Synchronous Imports for Core Commands (needed immediately at startup)
-// These are the most commonly used commands that need instant access
-// =============================================================================
-
-// PERF-03: Only import core commands synchronously (~10 most-used).
-// All other commands are lazy-loaded via commandLoaders on demand.
-import { initCommand } from './init.js';
-import { startCommand } from './start.js';
-import { statusCommand } from './status.js';
-import { taskCommand } from './task.js';
-import { sessionCommand } from './session.js';
-import { agentCommand } from './agent.js';
-import { swarmCommand } from './swarm.js';
-import { memoryCommand } from './memory.js';
-import { mcpCommand } from './mcp.js';
-import { hooksCommand } from './hooks.js';
-
-// Pre-populate cache with core commands only
-loadedCommands.set('init', initCommand);
-loadedCommands.set('start', startCommand);
-loadedCommands.set('status', statusCommand);
-loadedCommands.set('task', taskCommand);
-loadedCommands.set('session', sessionCommand);
-loadedCommands.set('agent', agentCommand);
-loadedCommands.set('swarm', swarmCommand);
-loadedCommands.set('memory', memoryCommand);
-loadedCommands.set('mcp', mcpCommand);
-loadedCommands.set('hooks', hooksCommand);
-
-// =============================================================================
 // Exports (maintain backwards compatibility)
 // =============================================================================
 
-// Export core commands (synchronous)
-export { initCommand } from './init.js';
-export { startCommand } from './start.js';
-export { statusCommand } from './status.js';
-export { taskCommand } from './task.js';
-export { sessionCommand } from './session.js';
-export { agentCommand } from './agent.js';
-export { swarmCommand } from './swarm.js';
-export { memoryCommand } from './memory.js';
-export { mcpCommand } from './mcp.js';
-export { hooksCommand } from './hooks.js';
-
-// Lazy-loaded command re-exports (for backwards compatibility, but async-only)
+// Lazy-loaded command accessors for compatibility
 export async function getConfigCommand() { return loadCommand('config'); }
 export async function getMigrateCommand() { return loadCommand('migrate'); }
 export async function getWorkflowCommand() { return loadCommand('workflow'); }
@@ -239,40 +203,17 @@ export async function getCleanupCommand() { return loadCommand('cleanup'); }
 export async function getAutopilotCommand() { return loadCommand('autopilot'); }
 
 /**
- * Core commands loaded synchronously (available immediately)
- * Advanced commands loaded on-demand for faster startup
+ * Commands loaded synchronously at startup.
+ * Intentionally empty in source-checkout mode to keep startup/import path light.
  */
-export const commands: Command[] = [
-  // Core commands (synchronously loaded) — PERF-03
-  initCommand,
-  startCommand,
-  statusCommand,
-  taskCommand,
-  sessionCommand,
-  agentCommand,
-  swarmCommand,
-  memoryCommand,
-  mcpCommand,
-  hooksCommand,
-];
+export const commands: Command[] = [];
 
 /**
  * Commands organized by category for help display (synchronous core only).
  * @deprecated Use getCommandsByCategory() for full categorized listing.
  */
 export const commandsByCategory = {
-  primary: [
-    initCommand,
-    startCommand,
-    statusCommand,
-    agentCommand,
-    swarmCommand,
-    memoryCommand,
-    taskCommand,
-    sessionCommand,
-    mcpCommand,
-    hooksCommand,
-  ],
+  primary: [] as Command[],
   advanced: [] as Command[],
   utility: [] as Command[],
   analysis: [] as Command[],
@@ -304,10 +245,17 @@ export async function getCommandsByCategory(): Promise<Record<string, Command[]>
 
   return {
     primary: [
-      initCommand, startCommand, statusCommand, agentCommand,
-      swarmCommand, memoryCommand, taskCommand, sessionCommand,
-      mcpCommand, hooksCommand,
-    ],
+      await loadCommand('init'),
+      await loadCommand('start'),
+      await loadCommand('status'),
+      await loadCommand('agent'),
+      await loadCommand('swarm'),
+      await loadCommand('memory'),
+      await loadCommand('task'),
+      await loadCommand('session'),
+      await loadCommand('mcp'),
+      await loadCommand('hooks'),
+    ].filter(Boolean) as Command[],
     advanced: [
       neuralCmd, securityCmd, performanceCmd, embeddingsCmd,
       hiveMindCmd, ruvectorCmd, guidanceCmd, autopilotCmd,
@@ -361,7 +309,8 @@ for (const cmd of commands) {
  * Use getCommandAsync for lazy-loaded commands
  */
 export function getCommand(name: string): Command | undefined {
-  return loadedCommands.get(name) || commandRegistry.get(name);
+  const canonicalName = lazyAliasToCommand.get(name) ?? name;
+  return loadedCommands.get(canonicalName) || commandRegistry.get(canonicalName) || commandRegistry.get(name);
 }
 
 /**
@@ -384,7 +333,7 @@ export async function getCommandAsync(name: string): Promise<Command | undefined
  * Check if command exists (sync check for core commands)
  */
 export function hasCommand(name: string): boolean {
-  return loadedCommands.has(name) || commandRegistry.has(name) || name in commandLoaders;
+  return loadedCommands.has(name) || commandRegistry.has(name) || name in commandLoaders || lazyAliasToCommand.has(name);
 }
 
 /**
@@ -394,7 +343,7 @@ export function hasCommand(name: string): boolean {
  * modules have been imported. Fix for #1596.
  */
 export function getLazyCommandNames(): string[] {
-  return Object.keys(commandLoaders);
+  return Array.from(new Set([...Object.keys(commandLoaders), ...lazyAliasToCommand.keys()]));
 }
 
 /**
@@ -405,6 +354,7 @@ export function getCommandNames(): string[] {
     ...Array.from(commandRegistry.keys()),
     ...Array.from(loadedCommands.keys()),
     ...Object.keys(commandLoaders),
+    ...Array.from(lazyAliasToCommand.keys()),
   ]);
   return Array.from(names);
 }

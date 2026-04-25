@@ -12,6 +12,10 @@ export default defineConfig({
         // Don't let Vite resolve optional deps that may have missing subpath exports
         if (source.startsWith('agentic-flow')) return { id: source, external: true };
         if (source.startsWith('agentdb')) return { id: source, external: true };
+        // Workspace packages often point to dist-only exports in fresh checkout;
+        // tests that don't execute those paths should still be runnable.
+        if (source.startsWith('@claude-flow/')) return { id: source, external: true };
+        if (source.startsWith('@ruvector/')) return { id: source, external: true };
         return null;
       },
     },

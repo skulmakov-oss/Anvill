@@ -41,6 +41,9 @@
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:cli": "npx tsx ./scripts/dev-cli.mjs",
+    "smoke:cli": "npm run dev:cli -- --help && npm run dev:cli -- --version && npm run dev:cli -- init --help",
+    "smoke:cli:source": "npm run smoke:cli",
     "build": "tsc",
     "build:ts": "cd v3/@claude-flow/cli && npm run build || true",
     "test": "vitest",
